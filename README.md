@@ -206,10 +206,19 @@ The project demonstrates the design of a complete restaurant workflow that integ
 It focuses on real-time order handling, responsive user interfaces, operational workflow design, and cloud database integration.
 
 ---
+## 📸 Screenshots
 
-## 📸 Project Preview
+### Kitchen Order Management Dashboard
 
-![Restaurant Management System](Images/restaurant-preview.jpg)
+![Kitchen Order Management Dashboard](Images/kitchen.jpg)
+
+Real-time kitchen dashboard for receiving and tracking orders through different stages: new orders, preparing, and ready for delivery.
+
+### Cashier & Table Management Dashboard
+
+![Cashier and Table Management Dashboard](Images/cach.jpg)
+
+Cashier dashboard for monitoring occupied tables, active orders, order totals, available tables, and completing customer bills.
 
 ---
 
