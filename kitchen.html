@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="assets/styles.css?v=16.0">
+  <title id="pageTitle">شاشة المطبخ</title>
+</head>
+<body class="kitchen-page">
+<header class="kitchen-header kitchen-pro-header">
+  <div class="container kitchen-toolbar kitchen-pro-toolbar">
+    <div class="kitchen-brand-pro">
+      <img class="kitchen-brand-logo hidden" data-logo-image alt="شعار المطعم">
+      <div>
+        <h1 data-restaurant-name></h1>
+        <p data-tagline>شاشة إدارة طلبات المطبخ</p>
+      </div>
+    </div>
+    <div class="kitchen-header-tools">
+      <div id="kitchenRealtimeState" class="realtime-state realtime-waiting"><span></span>جاري الاتصال…</div>
+      <div class="kitchen-clock" id="kitchenClock"></div>
+    </div>
+  </div>
+</header>
+<main class="container kitchen-pro-main">
+  <div class="kitchen-board-title">
+    <div><span>لوحة الطلبات</span><h2>متابعة الطلبات لحظة بلحظة</h2></div>
+    <div class="kitchen-live-note">يتم التحديث تلقائيًا</div>
+  </div>
+  <div id="ordersGrid" class="orders-grid kitchen-board kitchen-board-pro"></div>
+</main>
+<div id="kitchenToast" class="cash-toast" aria-live="polite"></div>
+<div id="printArea" class="print-target"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="assets/common.js"></script>
+<script>document.title=window.RESTAURANT_CONFIG.kitchen.pageTitle;</script>
+<script src="assets/kitchen.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="assets/styles.css?v=15.2">
+  <title>نظام الكاش</title>
+</head>
+<body class="cash-page">
+<header class="kitchen-header cash-header">
+  <div class="container kitchen-toolbar">
+    <div class="brand"><div><h1 data-restaurant-name></h1><p id="cashPageTitle">نظام الكاش والطاولات</p></div></div>
+    <div class="kitchen-actions">
+      <div id="cashRealtimeState" class="realtime-state realtime-waiting"><span></span>جاري الاتصال…</div>
+    </div>
+  </div>
+</header>
+<main class="container cash-main">
+  <div class="cash-summary">
+    <div><span>الطاولات المشغولة</span><strong id="occupiedCount">0</strong></div>
+    <div><span>إجمالي الحسابات المفتوحة</span><strong id="openTotal">0</strong></div>
+  </div>
+  <div id="cashTables" class="cash-tables-grid"></div>
+</main>
+<div id="cashConfirmModal" class="cash-confirm-modal" aria-hidden="true">
+  <div class="cash-confirm-backdrop" onclick="closeCheckoutModal()"></div>
+  <div class="cash-confirm-card" role="dialog" aria-modal="true" aria-labelledby="cashConfirmTitle">
+    <button class="cash-confirm-close" type="button" onclick="closeCheckoutModal()" aria-label="إغلاق">×</button>
+    <div class="cash-confirm-icon">✓</div>
+    <span class="cash-confirm-kicker">تأكيد عملية الدفع</span>
+    <h2 id="cashConfirmTitle">إغلاق حساب الطاولة</h2>
+    <p>بعد التأكيد سيتم حذف جميع طلبات هذه الطاولة وإعادتها كطاولة فارغة.</p>
+    <div class="cash-confirm-summary">
+      <div><span>رقم الطاولة</span><strong id="confirmTableNumber">—</strong></div>
+      <div><span>المبلغ الإجمالي</span><strong id="confirmTableTotal">—</strong></div>
+    </div>
+    <div class="cash-confirm-actions">
+      <button class="btn cash-confirm-cancel" type="button" onclick="closeCheckoutModal()">رجوع</button>
+      <button id="confirmCheckoutButton" class="btn cash-confirm-pay" type="button" onclick="confirmCheckout()">✓ تأكيد الدفع</button>
+    </div>
+  </div>
+</div>
+<div id="cashToast" class="cash-toast" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="assets/common.js"></script>
+<script src="assets/cash.js"></script>
+</body>
+</html>

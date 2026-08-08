@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="assets/styles.css?v=3">
+  <link rel="stylesheet" href="assets/luxury-v14.css?v=4">
+  <title>قصر البارون | تجربة طعام فاخرة</title>
+</head>
+<body>
+<header class="modern-header">
+  <div class="container modern-nav">
+    <a class="wordmark" href="#" aria-label="العودة إلى بداية الصفحة">
+      <img class="restaurant-logo" data-logo-image alt="شعار المطعم">
+      <span class="wordmark-text">
+        <span class="wordmark-kicker" data-english-name></span>
+        <strong data-restaurant-name></strong>
+        <small data-tagline></small>
+      </span>
+    </a>
+    <nav class="main-nav modern-links" aria-label="التنقل الرئيسي">
+      <a href="#menuStart" data-config-text="menuTitle">قائمة الطعام</a>
+      <a href="#contactSection">التواصل والموقع</a>
+    </nav>
+    <button class="premium-cart" onclick="toggleCart(true)" aria-label="فتح الطلب">
+      <span class="cart-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L21 8H6"/></svg></span>
+      <span class="cart-copy"><small>طلبك</small><strong><span id="cartCount">0</span> أصناف</strong></span>
+      <span class="cart-arrow" aria-hidden="true">←</span>
+    </button>
+  </div>
+</header>
+
+<main class="luxury-main">
+  <section id="menuStart" class="container menu-section">
+    <div class="menu-intro">
+      <span class="menu-eyebrow">نكهات مختارة بعناية</span>
+      <div class="section-title"><h2 id="menuHeading">قائمة الطعام</h2><span id="loadingText">جاري التحميل...</span></div>
+      <p>اكتشفوا تشكيلة مميزة من الأطباق المحضّرة لتمنحكم تجربة لا تُنسى.</p>
+    </div>
+    <div class="menu-layout">
+      <aside class="category-sidebar" aria-label="أقسام القائمة">
+        <div class="category-sidebar-title" id="categorySidebarTitle">الأقسام</div>
+        <nav id="categoryTabs" class="category-tabs"></nav>
+      </aside>
+      <div id="productsGrid" class="menu-categories"></div>
+    </div>
+  </section>
+</main>
+
+<div id="cartDrawer" class="drawer">
+  <div class="overlay" onclick="toggleCart(false)"></div>
+  <aside class="panel">
+    <div class="panel-header"><h2 id="cartTitle">طلبك</h2><button class="icon-btn" onclick="toggleCart(false)">✕</button></div>
+    <div id="cartItems"></div>
+    <div class="field"><label id="tableLabel">رقم الطاولة</label><select id="tableNumber"></select></div>
+    <div class="field"><label id="notesLabel">ملاحظات الطلب</label><textarea id="orderNotes" rows="3"></textarea></div>
+    <div class="summary"><div class="summary-row"><span>الإجمالي</span><span id="cartTotal">0</span></div></div>
+    <button id="submitBtn" class="btn btn-primary full" onclick="submitOrder()"></button>
+  </aside>
+</div>
+
+<section id="contactSection" class="contact-section">
+  <div class="container">
+    <div class="contact-heading"><span id="contactEyebrow"></span><h2 id="contactTitle"></h2><p id="contactDescription"></p></div>
+    <div class="contact-grid">
+      <article class="contact-card"><span class="contact-icon">⌖</span><div><small id="locationTitle"></small><strong data-address></strong><a id="mapButtonText" data-map-link target="_blank" rel="noopener"></a></div></article>
+      <article class="contact-card"><span class="contact-icon">☎</span><div><small id="phoneTitle"></small><strong data-phone></strong><a id="callButtonText" data-phone-link></a></div></article>
+      <article class="contact-card"><span class="contact-icon">◷</span><div><small id="hoursTitle"></small><strong data-working-hours></strong><span class="contact-note" id="hoursNote"></span></div></article>
+    </div>
+  </div>
+</section>
+<footer class="footer refined-footer"><div class="container footer-grid"><div><strong data-restaurant-name></strong><p data-tagline></p></div><div class="footer-copy">© <span id="footerYear"></span> جميع الحقوق محفوظة</div></div></footer>
+<div id="successModal" class="success-modal" aria-hidden="true">
+  <div class="success-backdrop"></div>
+  <div class="success-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+    <div class="success-check"><span>✓</span></div>
+    <h2 id="successTitle"></h2>
+    <p id="successMessage"></p>
+    <div class="success-preparing-label">طلب قيد التجهيز</div>
+    <button id="successButton" class="btn success-btn" onclick="closeSuccessModal()"></button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="assets/common.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    const c=window.RESTAURANT_CONFIG;
+    menuHeading.textContent=c.menu.menuTitle;
+    categorySidebarTitle.textContent=c.menu.categorySidebarTitle;
+    cartTitle.textContent=c.order.cartTitle;
+    tableLabel.textContent=c.order.tableLabel;
+    notesLabel.textContent=c.order.notesLabel;
+    orderNotes.placeholder=c.order.notesPlaceholder;
+    submitBtn.textContent=c.order.submitButton;
+    contactEyebrow.textContent=c.contact.eyebrow;
+    contactTitle.textContent=c.contact.title;
+    contactDescription.textContent=c.contact.description;
+    locationTitle.textContent=c.contact.locationTitle;
+    phoneTitle.textContent=c.contact.phoneTitle;
+    hoursTitle.textContent=c.contact.hoursTitle;
+    mapButtonText.textContent=c.contact.mapButtonText;
+    callButtonText.textContent=c.contact.callButtonText;
+    hoursNote.textContent=c.contact.hoursNote;
+    successTitle.textContent=c.order.successTitle;
+    successMessage.textContent=c.order.successMessage;
+    successButton.textContent=c.order.successButton;
+    if(!c.menu.showContactSection) document.getElementById('contactSection').hidden=true;
+    if(!c.menu.showFooter) document.querySelector('footer').hidden=true;
+  });
+</script>
+<script src="assets/menu.js"></script>
+</body>
+</html>

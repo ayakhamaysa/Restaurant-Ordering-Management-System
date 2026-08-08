@@ -1,0 +1,37 @@
+let cats=[],prods=[],settings={},editingCategory=null,editingProduct=null;
+async function init(){if(!requireSupabase())return;await loadRestaurantSettings();const {data:{session}}=await sb.auth.getSession();session?showAdmin():loginView.classList.remove('hidden')}
+async function login(){const {error}=await sb.auth.signInWithPassword({email:email.value,password:password.value});if(error)return alert(error.message);showAdmin()}
+async function logout(){await sb.auth.signOut();location.reload()}
+async function showAdmin(){loginView.classList.add('hidden');adminView.classList.remove('hidden');await refreshAll()}
+function showTab(name,a){document.querySelectorAll('.admin-main section').forEach(s=>s.classList.add('hidden'));document.getElementById('tab-'+name).classList.remove('hidden');document.querySelectorAll('.sidebar a').forEach(x=>x.classList.remove('active'));a.classList.add('active')}
+async function refreshAll(){await Promise.all([loadSettingsAdmin(),loadCategories(),loadProducts()]);statCategories.textContent=cats.length;statProducts.textContent=prods.length}
+
+async function uploadFile(bucket,file,prefix){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${prefix}/${Date.now()}-${crypto.randomUUID()}.${ext}`;const {error}=await sb.storage.from(bucket).upload(path,file,{upsert:false});if(error)throw error;return {path,url:sb.storage.from(bucket).getPublicUrl(path).data.publicUrl}}
+async function removeFile(bucket,path){if(path)await sb.storage.from(bucket).remove([path])}
+
+async function loadSettingsAdmin(){const {data,error}=await sb.from('restaurant_settings').select('*').eq('id',1).single();if(error)return alert(error.message);settings=data;settingName.value=data.restaurant_name||cfg.restaurantName;settingTagline.value=data.tagline||cfg.tagline;settingPhone.value=data.phone||cfg.phone;settingAddress.value=data.address||cfg.address;settingWorkingHours.value=data.working_hours||cfg.workingHours;settingMapUrl.value=data.map_url||cfg.mapUrl;venueImagePreview.src=data.venue_image_url||cfg.assets.venuePlaceholder;venueImagePreview.classList.toggle('venue-placeholder',!data.venue_image_url)}
+async function saveSettings(){try{
+  let venue_image_url=settings.venue_image_url||'',venue_image_path=settings.venue_image_path||'';
+  const venueFile=settingVenueImage.files[0];
+  if(venueFile){const old=venue_image_path;const up=await uploadFile('restaurant-media',venueFile,'logo');venue_image_url=up.url;venue_image_path=up.path;if(old)await removeFile('restaurant-media',old)}
+  const payload={restaurant_name:settingName.value.trim()||cfg.restaurantName,tagline:settingTagline.value.trim(),phone:settingPhone.value.trim(),address:settingAddress.value.trim(),working_hours:settingWorkingHours.value.trim()||cfg.workingHours,map_url:settingMapUrl.value.trim()||cfg.mapUrl,venue_image_url,venue_image_path,updated_at:new Date().toISOString()};
+  const {error}=await sb.from('restaurant_settings').update(payload).eq('id',1);if(error)throw error;
+  settings={...settings,...payload};liveSettings=settings;applyRestaurantSettings();venueImagePreview.src=venue_image_url||cfg.assets.venuePlaceholder;venueImagePreview.classList.toggle('venue-placeholder',!venue_image_url);settingVenueImage.value='';alert('تم حفظ بيانات المطعم')
+}catch(e){alert(e.message)}}
+
+
+async function loadCategories(){const {data,error}=await sb.from('categories').select('*').order('sort_order');if(error)return alert(error.message);cats=data||[];categoriesTable.innerHTML=cats.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.sort_order}</td><td><input type="checkbox" ${c.is_active?'checked':''} onchange="toggleCategory('${c.id}',this.checked)"></td><td><button class="btn btn-light" onclick="editCategory('${c.id}')">تعديل</button> <button class="btn btn-danger" onclick="deleteCategory('${c.id}')">حذف</button></td></tr>`).join('');productCategory.innerHTML=cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}
+function editCategory(id){const c=cats.find(x=>x.id===id);editingCategory=id;categoryName.value=c.name;categorySort.value=c.sort_order;window.scrollTo({top:0,behavior:'smooth'})}
+function resetCategoryForm(){editingCategory=null;categoryName.value='';categorySort.value=0}
+async function saveCategory(){const payload={name:categoryName.value.trim(),sort_order:Number(categorySort.value||0)};if(!payload.name)return alert('اكتبي اسم القسم');const q=editingCategory?sb.from('categories').update(payload).eq('id',editingCategory):sb.from('categories').insert(payload);const {error}=await q;if(error)return alert(error.message);resetCategoryForm();await refreshAll()}
+async function toggleCategory(id,v){const {error}=await sb.from('categories').update({is_active:v}).eq('id',id);if(error)alert(error.message);await loadCategories()}
+async function deleteCategory(id){if(!confirm('حذف القسم؟'))return;const {error}=await sb.from('categories').delete().eq('id',id);if(error)return alert('لا يمكن حذف قسم يحتوي أصنافًا');await refreshAll()}
+
+async function loadProducts(){const {data,error}=await sb.from('products').select('*').order('created_at',{ascending:false});if(error)return alert(error.message);prods=data||[];productsTable.innerHTML=prods.map(p=>`<tr><td><img class="thumb" src="${esc(p.image_url||cfg.assets.productPlaceholder)}"></td><td>${esc(p.name)}</td><td>${esc(cats.find(c=>c.id===p.category_id)?.name||'')}</td><td>${money(p.price)}</td><td><input type="checkbox" ${p.is_available?'checked':''} onchange="toggleProduct('${p.id}',this.checked)"></td><td><button class="btn btn-light" onclick="editProduct('${p.id}')">تعديل</button> <button class="btn btn-danger" onclick="deleteProduct('${p.id}')">حذف</button></td></tr>`).join('')}
+function editProduct(id){const p=prods.find(x=>x.id===id);editingProduct=id;productName.value=p.name;productCategory.value=p.category_id;productPrice.value=p.price;productDescription.value=p.description;window.scrollTo({top:0,behavior:'smooth'})}
+function resetProductForm(){editingProduct=null;productName.value='';productPrice.value='';productDescription.value='';productImage.value=''}
+async function saveProduct(){try{const old=editingProduct?prods.find(x=>x.id===editingProduct):null;let image_url=old?.image_url||'',image_path=old?.image_path||'';const file=productImage.files[0];if(file){const oldPath=image_path;const up=await uploadFile('product-images',file,'products');image_url=up.url;image_path=up.path;if(oldPath)await removeFile('product-images',oldPath)}const payload={name:productName.value.trim(),category_id:productCategory.value,price:Number(productPrice.value),description:productDescription.value.trim(),image_url,image_path};if(!payload.name||!payload.category_id||Number.isNaN(payload.price))return alert('أكملي بيانات الصنف');const q=editingProduct?sb.from('products').update(payload).eq('id',editingProduct):sb.from('products').insert(payload);const {error}=await q;if(error)throw error;resetProductForm();await refreshAll()}catch(e){alert(e.message)}}
+async function toggleProduct(id,v){const {error}=await sb.from('products').update({is_available:v}).eq('id',id);if(error)alert(error.message);await loadProducts()}
+async function deleteProduct(id){if(!confirm('حذف الصنف؟'))return;const p=prods.find(x=>x.id===id);const {error}=await sb.from('products').delete().eq('id',id);if(error)return alert(error.message);await removeFile('product-images',p?.image_path);await refreshAll()}
+
+init();
